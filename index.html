@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kinder Schaffa</title>
+
+  <style>
+    :root{
+      --bg:#f7fbff;
+      --card:#ffffff;
+      --stroke:#dbe6ff;
+      --text:#1f2937;
+      --muted:#6b7280;
+
+      --blue:#3b82f6;
+      --green:#22c55e;
+      --orange:#f59e0b;
+      --red:#ef4444;
+
+      --shadow:0 18px 40px rgba(59,130,246,.16);
+      --r:24px;
+      --r2:16px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      display:grid;
+      place-items:center;
+      padding:22px;
+      color:var(--text);
+    }
+
+    .app{
+      width:min(900px,100%);
+      background:var(--card);
+      border:1px solid var(--stroke);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    header{
+      padding:18px 20px;
+      border-bottom:1px solid var(--stroke);
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    .logo{
+      width:52px;height:52px;
+      border-radius:18px;
+      background:var(--green);
+      display:grid;
+      place-items:center;
+      font-size:26px;
+    }
+
+    main{padding:20px}
+
+    label{font-weight:800}
+
+    .row{
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+
+    input{
+      flex:1;
+      padding:14px;
+      border-radius:var(--r2);
+      border:2px solid var(--stroke);
+      font-size:16px;
+    }
+
+    button{
+      padding:14px 18px;
+      border-radius:var(--r2);
+      border:none;
+      background:var(--green);
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .panel{
+      margin-top:20px;
+      border:2px dashed var(--stroke);
+      border-radius:var(--r);
+      padding:18px;
+      background:#fbfdff;
+    }
+
+    .badge{
+      display:inline-flex;
+      padding:10px 14px;
+      border-radius:999px;
+      font-weight:900;
+      border:2px solid var(--stroke);
+    }
+
+    .ok{background:#ecfdf5;color:#166534}
+    .ko{background:#fff7ed;color:#9a3412}
+    .err{background:#fef2f2;color:#991b1b}
+    .load{background:#eff6ff;color:#1d4ed8}
+
+    .text{margin-top:12px;color:var(--muted)}
+
+    .card{
+      margin-top:14px;
+      border:1px solid var(--stroke);
+      border-radius:16px;
+      padding:12px;
+      background:#fff;
+    }
+
+    .k{font-size:12px;color:var(--muted);font-weight:800}
+    .v{font-size:14px;font-weight:800;white-space:pre-line}
+
+    .btnLink{
+      display:inline-flex;
+      margin-top:6px;
+      padding:10px 14px;
+      background:var(--blue);
+      color:white;
+      border-radius:14px;
+      text-decoration:none;
+      font-weight:900;
+    }
+
+    /* homonymie */
+    .choiceWrap{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:10px;
+    }
+    .choiceBtn{
+      background: var(--blue);
+      color:#fff;
+      border:none;
+      border-radius:14px;
+      padding:10px 12px;
+      cursor:pointer;
+      font-weight:900;
+      font-size:14px;
+    }
+
+    footer{
+      padding:14px;
+      border-top:1px solid var(--stroke);
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+<header>
+  <div class="logo">🧸</div>
+  <div>
+    <h1>Kinder Schaffa</h1>
+    <div style="color:#6b7280;font-size:14px">
+      Apprendre à vérifier les informations
+    </div>
+  </div>
+</header>
+
+<main>
+  <label for="org">Nom de l’entreprise ou organisation</label>
+  <div class="row">
+    <input id="org" placeholder="Ex : Nike, LEGO, Nintendo…" />
+    <button id="btn">🔎 Chercher</button>
+  </div>
+
+  <div class="panel">
+    <div id="help">
+      <div class="badge">ℹ️ Comment utiliser Kinder Schaffa</div>
+      <p class="text">
+        Écris le nom d’une entreprise ou organisation puis clique sur
+        <b>Chercher</b>.  
+        Kinder Schaffa regarde uniquement la section <b>Controverse</b> de Wikipédia
+        et cherche les mots <b>travail</b> et <b>enfants</b>. Kinder Schaffa peut se tromper ou manquer des informations importantes dans d'autres rubriques. Tu dois toujours recouper les informations avec d'autres sources.
+      </p>
+    </div>
+
+    <div id="result" style="display:none">
+      <div class="badge" id="badge"></div>
+      <p class="text" id="msg"></p>
+
+      <!-- homonymie -->
+      <div class="card" id="choicesCard" style="display:none">
+        <div class="k">Choisis la bonne page</div>
+        <div class="choiceWrap" id="choices"></div>
+      </div>
+
+      <div class="card">
+        <div class="k">Page Wikipédia</div>
+        <div class="v" id="title"></div>
+        <a class="btnLink" id="wikiLink" target="_blank">📘 Ouvrir la page</a>
+      </div>
+
+      <div class="card">
+        <div class="k">Résumé</div>
+        <div class="v" id="summary"></div>
+      </div>
+
+      <div class="card">
+        <div class="k">Résultat Kinder Schaffa</div>
+        <div class="v" id="resultText"></div>
+        <div class="k">Important</div>
+        <div class="v">
+          ⚠️ Vérifie toujours avec un adulte et plusieurs sources.
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span>Kinder Schaffa 👶</span>
+  <span id="api">API : /check</span>
+</footer>
+</div>
+
+<script>
+const btn = document.getElementById("btn");
+const input = document.getElementById("org");
+
+const help = document.getElementById("help");
+const result = document.getElementById("result");
+
+const badge = document.getElementById("badge");
+const msg = document.getElementById("msg");
+const title = document.getElementById("title");
+const wikiLink = document.getElementById("wikiLink");
+const summary = document.getElementById("summary");
+const resultText = document.getElementById("resultText");
+
+const choicesCard = document.getElementById("choicesCard");
+const choices = document.getElementById("choices");
+
+function wikiSearch(org){
+  return "https://fr.wikipedia.org/wiki/Special:Search?search=" + encodeURIComponent(org);
+}
+
+async function callApi(org, pick){
+  const url = pick
+    ? `/check?org=${encodeURIComponent(org)}&pick=${encodeURIComponent(pick)}`
+    : `/check?org=${encodeURIComponent(org)}`;
+  const res = await fetch(url);
+  return res.json();
+}
+
+function resetUI(){
+  badge.className = "badge load";
+  badge.textContent = "⏳ Recherche…";
+  msg.textContent = "Analyse de la section Controverse…";
+  summary.textContent = "";
+  resultText.textContent = "";
+  choicesCard.style.display = "none";
+  choices.innerHTML = "";
+}
+
+function showChoices(org, list){
+  choicesCard.style.display = "block";
+  list.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "choiceBtn";
+    b.textContent = c;
+    b.onclick = async () => {
+      resetUI();
+      const data = await callApi(org, c);
+      render(data, org);
+    };
+    choices.appendChild(b);
+  });
+}
+
+function render(data, org){
+  title.textContent = data.title || org;
+  wikiLink.href = data.wikipedia || wikiSearch(org);
+  summary.textContent = data.summary || "";
+
+  if (data.homonymyDetected && data.needChoice) {
+    badge.className = "badge err";
+    badge.textContent = "❓ Homonymie";
+    resultText.textContent = "Choisis la bonne page.";
+    showChoices(org, data.homonymyCandidates || []);
+    return;
+  }
+
+  if (data.childLabor === true) {
+    badge.className = "badge ko";
+    badge.textContent = "⚠️ Travail des enfants détecté";
+    resultText.textContent =
+      "Les mots « travail » et « enfants » apparaissent dans la section Controverse.";
+  } else if (data.childLabor === false) {
+    badge.className = "badge ok";
+    badge.textContent = "✅ Pas de travail des enfants détecté";
+    resultText.textContent =
+      "Les mots « travail » et « enfants » ne sont pas tous présents dans la section Controverse.";
+  } else {
+    badge.className = "badge err";
+    badge.textContent = "🤔 Je ne sais pas";
+    resultText.textContent = data.message || "";
+  }
+}
+
+btn.onclick = async () => {
+  const org = input.value.trim();
+  if (!org) {
+    help.style.display = "block";
+    result.style.display = "none";
+    return;
+  }
+
+  help.style.display = "none";
+  result.style.display = "block";
+  resetUI();
+
+  const data = await callApi(org);
+  render(data, org);
+};
+</script>
+</body>
+</html>
