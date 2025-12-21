@@ -229,11 +229,47 @@
 
 <footer>
   <span>Kinder Schaffa 👶</span>
-  <span id="api">API : /check</span>
+  <span id="api">API :</span>
 </footer>
 </div>
 
 <script>
+/**
+ * =========================
+ * CONFIG API (dev / prod)
+ * =========================
+ * Mets ici l'URL de ton serveur :
+ * - DEV  : "http://localhost:3000"
+ * - PROD : "https://12.34.56.78:3000" (pas recommandé) ou mieux "https://api.example.com"
+ *
+ * Important:
+ * - ne mets PAS de slash final (on le gère)
+ * - si tu laisses "" => appel relatif (même domaine que la page)
+ */
+const API_BASE_DEFAULT = ""; // <-- EX: "http://localhost:3000" en dev, "https://api.example.com" en prod
+
+/**
+ * Option pratique (facultative) :
+ * tu peux surcharger via l'URL de la page:
+ *   https://monuser.github.io/monrepo/?api=https://api.example.com
+ */
+function getApiBase() {
+  const params = new URLSearchParams(window.location.search);
+  const override = (params.get("api") || "").trim();
+
+  const base = override || API_BASE_DEFAULT || "";
+  // nettoie le slash final
+  return base.endsWith("/") ? base.slice(0, -1) : base;
+}
+
+const API_BASE = getApiBase();
+
+/**
+ * Affiche l'API utilisée dans le footer
+ */
+const apiEl = document.getElementById("api");
+apiEl.textContent = "API : " + (API_BASE ? (API_BASE + "/check") : "/check");
+
 const btn = document.getElementById("btn");
 const input = document.getElementById("org");
 
@@ -254,10 +290,20 @@ function wikiSearch(org){
   return "https://fr.wikipedia.org/wiki/Special:Search?search=" + encodeURIComponent(org);
 }
 
+/**
+ * Construit l'URL /check en tenant compte de API_BASE
+ */
+function buildCheckUrl(org, pick){
+  const qs = pick
+    ? `org=${encodeURIComponent(org)}&pick=${encodeURIComponent(pick)}`
+    : `org=${encodeURIComponent(org)}`;
+
+  // Si API_BASE est vide => relatif (comme avant)
+  return (API_BASE ? `${API_BASE}/check?${qs}` : `/check?${qs}`);
+}
+
 async function callApi(org, pick){
-  const url = pick
-    ? `/check?org=${encodeURIComponent(org)}&pick=${encodeURIComponent(pick)}`
-    : `/check?org=${encodeURIComponent(org)}`;
+  const url = buildCheckUrl(org, pick);
   const res = await fetch(url);
   return res.json();
 }
