@@ -160,6 +160,8 @@
       color:var(--muted);
       display:flex;
       justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
     }
   </style>
 </head>
@@ -192,6 +194,9 @@
         Kinder Schaffa regarde uniquement la section <b>Controverse</b> de Wikipédia
         et cherche les mots <b>travail</b> et <b>enfants</b>. Kinder Schaffa peut se tromper ou manquer des informations importantes dans d'autres rubriques. Tu dois toujours recouper les informations avec d'autres sources.
       </p>
+      <p class="text">
+        ⚠️ Remarque : si l’API refuse (token manquant/incorrect), le résultat affichera “Accès refusé”.
+      </p>
     </div>
 
     <div id="result" style="display:none">
@@ -207,7 +212,7 @@
       <div class="card">
         <div class="k">Page Wikipédia</div>
         <div class="v" id="title"></div>
-        <a class="btnLink" id="wikiLink" target="_blank">📘 Ouvrir la page</a>
+        <a class="btnLink" id="wikiLink" target="_blank" rel="noopener noreferrer">📘 Ouvrir la page</a>
       </div>
 
       <div class="card">
@@ -230,45 +235,47 @@
 <footer>
   <span>Kinder Schaffa 👶</span>
   <span id="api">API :</span>
+  <span id="auth">Auth :</span>
 </footer>
 </div>
 
 <script>
 /**
  * =========================
- * CONFIG API (dev / prod)
+ * CONFIG API (GitHub Pages prod)
  * =========================
- * Mets ici l'URL de ton serveur :
- * - DEV  : "http://localhost:3000"
- * - PROD : "https://12.34.56.78:3000" (pas recommandé) ou mieux "https://api.example.com"
- *
- * Important:
- * - ne mets PAS de slash final (on le gère)
- * - si tu laisses "" => appel relatif (même domaine que la page)
  */
-const API_BASE_DEFAULT = "http://localhost:3000"; // <-- EX: "http://localhost:3000" en dev, "https://api.example.com" en prod
+const API_BASE_DEFAULT = "https://kinder-schaffa.duckdns.org"; // PROD
+// Mets ici le token que tu lis dans /etc/default/kinder-schaffa (API_TOKEN=...)
+// ⚠️ Public sur GitHub Pages => récupérable
+const API_TOKEN_DEFAULT = ""; // <-- COLLE ICI TON API_TOKEN
 
 /**
- * Option pratique (facultative) :
- * tu peux surcharger via l'URL de la page:
- *   https://monuser.github.io/monrepo/?api=https://api.example.com
+ * Option pratique:
+ *   ?api=https://kinder-schaffa.duckdns.org
+ *   ?token=XXXXX
  */
 function getApiBase() {
   const params = new URLSearchParams(window.location.search);
   const override = (params.get("api") || "").trim();
-
   const base = override || API_BASE_DEFAULT || "";
-  // nettoie le slash final
   return base.endsWith("/") ? base.slice(0, -1) : base;
 }
 
+function getApiToken() {
+  const params = new URLSearchParams(window.location.search);
+  const t = (params.get("token") || "").trim();
+  return t || API_TOKEN_DEFAULT || "";
+}
+
 const API_BASE = getApiBase();
+const API_TOKEN = getApiToken();
 
 /**
- * Affiche l'API utilisée dans le footer
+ * Footer info
  */
-const apiEl = document.getElementById("api");
-apiEl.textContent = "API : " + (API_BASE ? (API_BASE + "/check") : "/check");
+document.getElementById("api").textContent = "API : " + (API_BASE ? (API_BASE + "/check") : "/check");
+document.getElementById("auth").textContent = "Auth : " + (API_TOKEN ? "Bearer (configuré)" : "Bearer (token manquant)");
 
 const btn = document.getElementById("btn");
 const input = document.getElementById("org");
@@ -290,22 +297,11 @@ function wikiSearch(org){
   return "https://fr.wikipedia.org/wiki/Special:Search?search=" + encodeURIComponent(org);
 }
 
-/**
- * Construit l'URL /check en tenant compte de API_BASE
- */
 function buildCheckUrl(org, pick){
   const qs = pick
     ? `org=${encodeURIComponent(org)}&pick=${encodeURIComponent(pick)}`
     : `org=${encodeURIComponent(org)}`;
-
-  // Si API_BASE est vide => relatif (comme avant)
   return (API_BASE ? `${API_BASE}/check?${qs}` : `/check?${qs}`);
-}
-
-async function callApi(org, pick){
-  const url = buildCheckUrl(org, pick);
-  const res = await fetch(url);
-  return res.json();
 }
 
 function resetUI(){
@@ -333,7 +329,64 @@ function showChoices(org, list){
   });
 }
 
+/**
+ * Appel API avec Bearer
+ * - gère 401/429/500 proprement
+ */
+async function callApi(org, pick){
+  const url = buildCheckUrl(org, pick);
+
+  // Token manquant => on affiche direct une erreur user-friendly
+  if (!API_TOKEN) {
+    return { ok:false, error:"Auth manquante", message:"Accès refusé : token Bearer manquant côté interface." };
+  }
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer " + API_TOKEN
+      }
+    });
+  } catch (e) {
+    return { ok:false, error:"Network", message:"Impossible de contacter l’API (réseau ou CORS)." };
+  }
+
+  // Essaye de lire le JSON, sinon fallback
+  let data = null;
+  try { data = await res.json(); } catch (e) { data = null; }
+
+  if (res.status === 401) {
+    return { ok:false, error:"Unauthorized", message:"Accès refusé : token invalide ou manquant." };
+  }
+  if (res.status === 403) {
+    return { ok:false, error:"Forbidden", message:"Accès refusé (origine non autorisée ou policy serveur)." };
+  }
+  if (res.status === 429) {
+    return { ok:false, error:"RateLimit", message:"Trop de requêtes. Attends un peu puis réessaie." };
+  }
+  if (!res.ok) {
+    return data || { ok:false, error:"Server", message:"Erreur serveur (" + res.status + ")." };
+  }
+
+  return data || { ok:false, error:"Parse", message:"Réponse invalide de l’API." };
+}
+
 function render(data, org){
+  // Cas erreurs
+  if (!data || data.ok === false) {
+    badge.className = "badge err";
+    badge.textContent = "⛔ Accès / erreur";
+    msg.textContent = data?.message || data?.error || "Erreur inconnue.";
+    title.textContent = org;
+    wikiLink.href = wikiSearch(org);
+    summary.textContent = "";
+    resultText.textContent = data?.message || "Impossible de continuer.";
+    return;
+  }
+
+  // Cas normal
   title.textContent = data.title || org;
   wikiLink.href = data.wikipedia || wikiSearch(org);
   summary.textContent = data.summary || "";
@@ -341,10 +394,13 @@ function render(data, org){
   if (data.homonymyDetected && data.needChoice) {
     badge.className = "badge err";
     badge.textContent = "❓ Homonymie";
+    msg.textContent = data.message || "Choisis la bonne page.";
     resultText.textContent = "Choisis la bonne page.";
     showChoices(org, data.homonymyCandidates || []);
     return;
   }
+
+  msg.textContent = data.message || "";
 
   if (data.childLabor === true) {
     badge.className = "badge ko";
@@ -378,6 +434,11 @@ btn.onclick = async () => {
   const data = await callApi(org);
   render(data, org);
 };
+
+// Bonus UX: Enter pour lancer
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") btn.click();
+});
 </script>
 </body>
 </html>
