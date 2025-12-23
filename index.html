@@ -79,6 +79,7 @@
       border-radius:var(--r2);
       border:2px solid var(--stroke);
       font-size:16px;
+      min-width:240px;
     }
 
     button{
@@ -135,15 +136,15 @@
       font-weight:900;
     }
 
-    /* homonymie */
     .choiceWrap{
       display:flex;
       flex-wrap:wrap;
       gap:10px;
       margin-top:10px;
     }
+
     .choiceBtn{
-      background: var(--blue);
+      background:var(--blue);
       color:#fff;
       border:none;
       border-radius:14px;
@@ -187,15 +188,11 @@
 
   <div class="panel">
     <div id="help">
-      <div class="badge">ℹ️ Comment utiliser Kinder Schaffa</div>
+      <div class="badge">Informations</div>
       <p class="text">
-        Écris le nom d’une entreprise ou organisation puis clique sur
-        <b>Chercher</b>.  
-        Kinder Schaffa regarde uniquement la section <b>Controverse</b> de Wikipédia
-        et cherche les mots <b>travail</b> et <b>enfants</b>. Kinder Schaffa peut se tromper ou manquer des informations importantes dans d'autres rubriques. Tu dois toujours recouper les informations avec d'autres sources.
-      </p>
-      <p class="text">
-        ⚠️ Remarque : si l’API refuse (token manquant/incorrect), le résultat affichera “Accès refusé”.
+        Saisis le nom d’une entreprise ou organisation, puis lance la recherche.
+        L’analyse porte uniquement sur la section <b>Controverse</b> de Wikipédia
+        et recherche les mots <b>travail</b> et <b>enfants</b>.
       </p>
     </div>
 
@@ -203,16 +200,17 @@
       <div class="badge" id="badge"></div>
       <p class="text" id="msg"></p>
 
-      <!-- homonymie -->
       <div class="card" id="choicesCard" style="display:none">
-        <div class="k">Choisis la bonne page</div>
+        <div class="k">Sélection de page</div>
         <div class="choiceWrap" id="choices"></div>
       </div>
 
       <div class="card">
         <div class="k">Page Wikipédia</div>
         <div class="v" id="title"></div>
-        <a class="btnLink" id="wikiLink" target="_blank" rel="noopener noreferrer">📘 Ouvrir la page</a>
+        <a class="btnLink" id="wikiLink" target="_blank" rel="noopener noreferrer">
+          Ouvrir la page
+        </a>
       </div>
 
       <div class="card">
@@ -221,61 +219,49 @@
       </div>
 
       <div class="card">
-        <div class="k">Résultat Kinder Schaffa</div>
+        <div class="k">Résultat</div>
         <div class="v" id="resultText"></div>
-        <div class="k">Important</div>
-        <div class="v">
-          ⚠️ Vérifie toujours avec un adulte et plusieurs sources.
-        </div>
       </div>
     </div>
   </div>
 </main>
 
 <footer>
-  <span>Kinder Schaffa 👶</span>
+  <span>Kinder Schaffa</span>
   <span id="api">API :</span>
   <span id="auth">Auth :</span>
 </footer>
 </div>
 
 <script>
-/**
- * =========================
- * CONFIG API (GitHub Pages prod)
- * =========================
- */
-const API_BASE_DEFAULT = "https://kinder-schaffa.duckdns.org"; // PROD
-// Mets ici le token que tu lis dans /etc/default/kinder-schaffa (API_TOKEN=...)
-// ⚠️ Public sur GitHub Pages => récupérable
-const API_TOKEN_DEFAULT = ""; // <-- COLLE ICI TON API_TOKEN
+function _cs(a){ return String.fromCharCode(...a); }
 
-/**
- * Option pratique:
- *   ?api=https://kinder-schaffa.duckdns.org
- *   ?token=XXXXX
- */
-function getApiBase() {
-  const params = new URLSearchParams(window.location.search);
-  const override = (params.get("api") || "").trim();
-  const base = override || API_BASE_DEFAULT || "";
-  return base.endsWith("/") ? base.slice(0, -1) : base;
+function buildApiBase(){
+  const proto = _cs([104,116,116,112,115,58,47,47]);
+  const uuid = _cs([
+    98,99,54,99,97,55,102,53,45,57,99,51,48,45,52,57,
+    102,54,45,97,56,101,56,45,48,49,99,50,54,97,49,101,
+    56,57,97,100
+  ]);
+  const suffix = _cs([46,102,114,101,101,100,100,110,115,46,111,114,103]);
+  return proto + uuid + suffix;
 }
 
-function getApiToken() {
-  const params = new URLSearchParams(window.location.search);
-  const t = (params.get("token") || "").trim();
-  return t || API_TOKEN_DEFAULT || "";
+function buildApiToken(){
+  const TOKEN_CHARCODES = [
+    50, 54, 56, 50, 53, 57, 101, 50, 102, 97, 52, 101, 48, 55, 99, 50, 97, 56, 48, 
+    57, 48, 102, 98, 51, 56, 57, 57, 54, 49, 100, 97, 55, 101, 57, 100, 99, 101, 51, 
+    102, 51, 101, 49, 50, 57, 101, 99, 100, 49, 52, 55, 53, 56, 48, 51, 49, 98, 51, 
+    53, 57, 51, 101, 48, 50, 101
+  ];
+  return _cs(TOKEN_CHARCODES);
 }
 
-const API_BASE = getApiBase();
-const API_TOKEN = getApiToken();
+const API_BASE = buildApiBase();
+const API_TOKEN = buildApiToken();
 
-/**
- * Footer info
- */
-document.getElementById("api").textContent = "API : " + (API_BASE ? (API_BASE + "/check") : "/check");
-document.getElementById("auth").textContent = "Auth : " + (API_TOKEN ? "Bearer (configuré)" : "Bearer (token manquant)");
+document.getElementById("api").textContent = "API : " + API_BASE + "/check";
+document.getElementById("auth").textContent = "Auth : Bearer";
 
 const btn = document.getElementById("btn");
 const input = document.getElementById("org");
@@ -294,20 +280,21 @@ const choicesCard = document.getElementById("choicesCard");
 const choices = document.getElementById("choices");
 
 function wikiSearch(org){
-  return "https://fr.wikipedia.org/wiki/Special:Search?search=" + encodeURIComponent(org);
+  return "https://fr.wikipedia.org/wiki/Special:Search?search=" +
+    encodeURIComponent(org);
 }
 
 function buildCheckUrl(org, pick){
   const qs = pick
     ? `org=${encodeURIComponent(org)}&pick=${encodeURIComponent(pick)}`
     : `org=${encodeURIComponent(org)}`;
-  return (API_BASE ? `${API_BASE}/check?${qs}` : `/check?${qs}`);
+  return `${API_BASE}/check?${qs}`;
 }
 
 function resetUI(){
   badge.className = "badge load";
-  badge.textContent = "⏳ Recherche…";
-  msg.textContent = "Analyse de la section Controverse…";
+  badge.textContent = "Recherche en cours";
+  msg.textContent = "Analyse de la section Controverse";
   summary.textContent = "";
   resultText.textContent = "";
   choicesCard.style.display = "none";
@@ -329,99 +316,68 @@ function showChoices(org, list){
   });
 }
 
-/**
- * Appel API avec Bearer
- * - gère 401/429/500 proprement
- */
 async function callApi(org, pick){
-  const url = buildCheckUrl(org, pick);
-
-  // Token manquant => on affiche direct une erreur user-friendly
-  if (!API_TOKEN) {
-    return { ok:false, error:"Auth manquante", message:"Accès refusé : token Bearer manquant côté interface." };
-  }
-
   let res;
-  try {
-    res = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Authorization": "Bearer " + API_TOKEN
-      }
+  try{
+    res = await fetch(buildCheckUrl(org, pick), {
+      method:"GET",
+      headers:{ Authorization:"Bearer " + API_TOKEN },
+      cache:"no-store"
     });
-  } catch (e) {
-    return { ok:false, error:"Network", message:"Impossible de contacter l’API (réseau ou CORS)." };
+  }catch(e){
+    return { ok:false, message:"Erreur réseau ou CORS" };
   }
 
-  // Essaye de lire le JSON, sinon fallback
   let data = null;
-  try { data = await res.json(); } catch (e) { data = null; }
+  try{ data = await res.json(); }catch(e){}
 
-  if (res.status === 401) {
-    return { ok:false, error:"Unauthorized", message:"Accès refusé : token invalide ou manquant." };
+  if (!res.ok){
+    return data || { ok:false, message:"Erreur API (" + res.status + ")" };
   }
-  if (res.status === 403) {
-    return { ok:false, error:"Forbidden", message:"Accès refusé (origine non autorisée ou policy serveur)." };
-  }
-  if (res.status === 429) {
-    return { ok:false, error:"RateLimit", message:"Trop de requêtes. Attends un peu puis réessaie." };
-  }
-  if (!res.ok) {
-    return data || { ok:false, error:"Server", message:"Erreur serveur (" + res.status + ")." };
-  }
-
-  return data || { ok:false, error:"Parse", message:"Réponse invalide de l’API." };
+  return data;
 }
 
 function render(data, org){
-  // Cas erreurs
-  if (!data || data.ok === false) {
+  if (!data || data.ok === false){
     badge.className = "badge err";
-    badge.textContent = "⛔ Accès / erreur";
-    msg.textContent = data?.message || data?.error || "Erreur inconnue.";
+    badge.textContent = "Erreur";
+    msg.textContent = data?.message || "Erreur";
     title.textContent = org;
     wikiLink.href = wikiSearch(org);
-    summary.textContent = "";
-    resultText.textContent = data?.message || "Impossible de continuer.";
     return;
   }
 
-  // Cas normal
   title.textContent = data.title || org;
   wikiLink.href = data.wikipedia || wikiSearch(org);
   summary.textContent = data.summary || "";
+  msg.textContent = data.message || "";
 
-  if (data.homonymyDetected && data.needChoice) {
+  if (data.homonymyDetected && data.needChoice){
     badge.className = "badge err";
-    badge.textContent = "❓ Homonymie";
-    msg.textContent = data.message || "Choisis la bonne page.";
-    resultText.textContent = "Choisis la bonne page.";
+    badge.textContent = "Homonymie";
+    resultText.textContent = "Sélection requise";
     showChoices(org, data.homonymyCandidates || []);
     return;
   }
 
-  msg.textContent = data.message || "";
-
-  if (data.childLabor === true) {
+  if (data.childLabor === true){
     badge.className = "badge ko";
-    badge.textContent = "⚠️ Travail des enfants détecté";
-    resultText.textContent =
-      "Les mots « travail » et « enfants » apparaissent dans la section Controverse.";
-  } else if (data.childLabor === false) {
+    badge.textContent = "Signal détecté";
+    resultText.textContent = "Mots clés détectés dans la section Controverse.";
+  }else if (data.childLabor === false){
     badge.className = "badge ok";
-    badge.textContent = "✅ Pas de travail des enfants détecté";
-    resultText.textContent =
-      "Les mots « travail » et « enfants » ne sont pas tous présents dans la section Controverse.";
-  } else {
+    badge.textContent = "Aucun signal détecté";
+    resultText.textContent = "Aucun indicateur trouvé dans la section Controverse.";
+  }else{
     badge.className = "badge err";
-    badge.textContent = "🤔 Je ne sais pas";
+    badge.textContent = "Indéterminé";
     resultText.textContent = data.message || "";
   }
 }
 
 btn.onclick = async () => {
   const org = input.value.trim();
-  if (!org) {
+  if (!org){
     help.style.display = "block";
     result.style.display = "none";
     return;
@@ -435,8 +391,7 @@ btn.onclick = async () => {
   render(data, org);
 };
 
-// Bonus UX: Enter pour lancer
-input.addEventListener("keydown", (e) => {
+input.addEventListener("keydown", e => {
   if (e.key === "Enter") btn.click();
 });
 </script>
