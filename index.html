@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
   <title>Kinder Schaffa</title>
 
   <style>
@@ -11,33 +12,69 @@
       --card:#ffffff;
       --stroke:#dbe6ff;
       --text:#1f2937;
-      --muted:#6b7280;
+      --muted:#4b5563;
 
-      --blue:#3b82f6;
-      --green:#22c55e;
+      --blue:#2563eb;
+      --green:#16a34a;
       --orange:#f59e0b;
-      --red:#ef4444;
+      --red:#dc2626;
 
-      --shadow:0 18px 40px rgba(59,130,246,.16);
-      --r:24px;
+      --shadow:0 18px 40px rgba(37,99,235,.14);
+      --r:22px;
       --r2:16px;
+
+      --tap:48px;
+      --fs-1: clamp(1.25rem, 2.3vw, 1.6rem);
+      --fs-2: clamp(1rem, 2vw, 1.15rem);
+      --fs-3: clamp(.95rem, 1.8vw, 1.05rem);
+      --fs-4: clamp(.85rem, 1.6vw, .95rem);
+
+      /* Splash timing controls */
+      --word-step: 2100ms;          /* durée par mot (slot) */
+      --splash-fade-out: 1100ms;    /* fondu final doux et lent */
     }
 
-    *{box-sizing:border-box}
-
+    *{ box-sizing:border-box; }
+    html{ -webkit-text-size-adjust: 100%; }
     body{
       margin:0;
       min-height:100vh;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: var(--bg);
-      display:grid;
-      place-items:center;
-      padding:22px;
       color:var(--text);
+      line-height:1.5;
     }
 
+    .page{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .skip{
+      position:absolute;
+      left:-9999px;
+      top:0;
+      background:#fff;
+      color:#000;
+      padding:12px 14px;
+      border-radius:12px;
+      border:2px solid #000;
+      z-index:9999;
+    }
+    .skip:focus{ left:12px; top:12px; }
+
     .app{
-      width:min(900px,100%);
+      width:100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 14px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .shell{
       background:var(--card);
       border:1px solid var(--stroke);
       border-radius:var(--r);
@@ -46,94 +83,246 @@
     }
 
     header{
-      padding:18px 20px;
+      padding: 14px 14px 10px;
       border-bottom:1px solid var(--stroke);
       display:flex;
       align-items:center;
-      gap:14px;
+      gap:12px;
     }
 
     .logo{
-      width:52px;height:52px;
+      width:56px;height:56px;
       border-radius:18px;
       background:var(--green);
       display:grid;
       place-items:center;
-      font-size:26px;
+      font-size:28px;
+      flex:0 0 auto;
     }
 
-    main{padding:20px}
+    header h1{
+      margin:0;
+      font-size:var(--fs-1);
+      letter-spacing:.2px;
+    }
+    .subtitle{
+      margin-top:2px;
+      color:var(--muted);
+      font-size:var(--fs-4);
+    }
 
-    label{font-weight:800}
+    main{ padding: 14px; }
 
-    .row{
+    .sectionTitle{
+      font-weight:900;
+      font-size:var(--fs-2);
+      margin: 2px 0 10px;
+    }
+
+    .hint{
+      margin: 0 0 12px;
+      color:var(--muted);
+      font-size:var(--fs-4);
+    }
+
+    .field{
       display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    label{
+      font-weight:900;
+      font-size:var(--fs-3);
+    }
+
+    .controlRow{
+      display:flex;
+      flex-direction:column;
       gap:10px;
-      margin-top:10px;
-      flex-wrap:wrap;
     }
 
     input{
-      flex:1;
-      padding:14px;
-      border-radius:var(--r2);
+      width:100%;
+      min-height: var(--tap);
+      padding: 14px 14px;
+      border-radius: var(--r2);
       border:2px solid var(--stroke);
-      font-size:16px;
-      min-width:240px;
+      font-size: var(--fs-3);
+      background:#fff;
+      color:#111827;
     }
 
     button{
-      padding:14px 18px;
-      border-radius:var(--r2);
-      border:none;
-      background:var(--green);
-      font-weight:900;
+      min-height: var(--tap);
+      padding: 12px 14px;
+      border-radius: var(--r2);
+      border: 2px solid transparent;
+      background: var(--green);
+      color:#fff;
+      font-weight: 1000;
+      font-size: var(--fs-3);
       cursor:pointer;
+      touch-action: manipulation;
+    }
+
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    :focus-visible{
+      outline: 4px solid rgba(17,24,39,.2);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 3px rgba(17,24,39,.25);
+    }
+    input:focus-visible{
+      border-color: rgba(17,24,39,.6);
     }
 
     .panel{
-      margin-top:20px;
+      margin-top:14px;
       border:2px dashed var(--stroke);
       border-radius:var(--r);
-      padding:18px;
+      padding: 14px;
       background:#fbfdff;
     }
 
     .badge{
       display:inline-flex;
+      align-items:center;
+      gap:8px;
       padding:10px 14px;
       border-radius:999px;
-      font-weight:900;
+      font-weight:1000;
       border:2px solid var(--stroke);
+      font-size: var(--fs-4);
+      max-width:100%;
     }
 
-    .ok{background:#ecfdf5;color:#166534}
-    .ko{background:#fff7ed;color:#9a3412}
-    .err{background:#fef2f2;color:#991b1b}
-    .load{background:#eff6ff;color:#1d4ed8}
+    .ok{ background:#ecfdf5; color:#14532d; }
+    .ko{ background:#fff7ed; color:#7c2d12; }
+    .err{ background:#fef2f2; color:#7f1d1d; }
+    .load{ background:#eff6ff; color:#1d4ed8; }
 
-    .text{margin-top:12px;color:var(--muted)}
+    .text{
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: var(--fs-4);
+    }
+
+    .steps{
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: var(--fs-4);
+    }
+    
+    .calloutArrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:2px solid var(--stroke);
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-weight:1000;
+    }
+    
+    .calloutArrow::before{
+      content:"➡️";
+      font-size:1.05em;
+      line-height:1;
+    }
 
     .card{
-      margin-top:14px;
+      margin-top:12px;
       border:1px solid var(--stroke);
       border-radius:16px;
       padding:12px;
       background:#fff;
     }
 
-    .k{font-size:12px;color:var(--muted);font-weight:800}
-    .v{font-size:14px;font-weight:800;white-space:pre-line}
+    .k{
+      font-size: var(--fs-4);
+      color: var(--muted);
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+    .v{
+      font-size: var(--fs-3);
+      font-weight: 800;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
+    }
+    
+    /* Citation stylisée pour le résumé Wikipédia */
+    .wikiQuote{
+      position: relative;
+      margin: 0;
+      padding: 14px 14px 14px 20px;
+      border-left: 6px solid var(--stroke);
+      border-radius: 14px;
+      background: #f8fbff;
+      color: var(--text);
+      font-weight: 500;      /* pas en gras */
+      font-style: italic;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+    
+    .wikiQuote::before{
+      content: "“";
+      position: absolute;
+      left: 10px;
+      top: -18px;
+      font-size: 54px;
+      line-height: 1;
+      color: rgba(37,99,235,.35);
+      font-weight: 900;
+    }
+    
+    .wikiQuote::after{
+      content: "”";
+      margin-left: 6px;
+      color: rgba(37,99,235,.35);
+      font-weight: 900;
+    }
+
+    .wikiQuote strong{
+      font-weight: 900;
+      font-style: normal; /* le mot en gras n'est pas en italique si tu préfères */
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:10px;
+      align-items:center;
+    }
 
     .btnLink{
       display:inline-flex;
-      margin-top:6px;
-      padding:10px 14px;
-      background:var(--blue);
-      color:white;
-      border-radius:14px;
+      align-items:center;
+      justify-content:center;
+      min-height: var(--tap);
+      padding: 10px 14px;
+      background: var(--blue);
+      color:#fff;
+      border-radius: 14px;
       text-decoration:none;
-      font-weight:900;
+      font-weight: 1000;
+      font-size: var(--fs-4);
+      border: 2px solid transparent;
+    }
+    .btnLink:focus-visible{ border-color: rgba(17,24,39,.55); }
+
+    .ghostBtn{
+      background: transparent;
+      color: var(--text);
+      border: 2px solid var(--stroke);
     }
 
     .choiceWrap{
@@ -144,256 +333,645 @@
     }
 
     .choiceBtn{
-      background:var(--blue);
+      background: var(--blue);
       color:#fff;
       border:none;
       border-radius:14px;
-      padding:10px 12px;
+      padding: 10px 12px;
       cursor:pointer;
-      font-weight:900;
-      font-size:14px;
+      font-weight:1000;
+      font-size: var(--fs-4);
+      min-height: var(--tap);
+      max-width:100%;
     }
 
     footer{
-      padding:14px;
+      padding: 12px 14px;
       border-top:1px solid var(--stroke);
-      font-size:12px;
-      color:var(--muted);
+      font-size: 12px;
+      color: var(--muted);
       display:flex;
       justify-content:space-between;
       gap:10px;
       flex-wrap:wrap;
     }
+
+    @media (min-width: 720px){
+      header{ padding: 18px 20px; }
+      main{ padding: 20px; }
+      .panel{ padding: 18px; }
+      .controlRow{
+        flex-direction: row;
+        align-items: stretch;
+      }
+      input{ flex: 1; }
+      button{ width: auto; }
+    }
+
+    @media (forced-colors: active){
+      *{ forced-color-adjust: auto; }
+      .badge, .btnLink, button, input, .shell, .panel, .card{
+        border: 1px solid CanvasText !important;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ animation: none !important; transition: none !important; scroll-behavior:auto !important; }
+    }
+
+    /* --- Splash / intro --- */
+    .splash{
+      position: fixed;
+      inset:0;
+      background: var(--bg);
+      display:grid;
+      place-items:center;
+      z-index: 99999;
+      opacity: 1;
+      transition: opacity var(--splash-fade-out) ease;
+    }
+    .splash.isFading{
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .splashInner{
+      width:min(560px, 92vw);
+      background: var(--card);
+      border:1px solid var(--stroke);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      text-align:center;
+    }
+
+    .bigLogo{
+      width: 120px;
+      height: 120px;
+      border-radius: 34px;
+      background: var(--green);
+      margin: 6px auto 10px;
+      display:grid;
+      place-items:center;
+      font-size: 64px;
+    }
+
+    .splashTitle{
+      font-size: var(--fs-1);
+      font-weight: 1000;
+      margin: 0 0 10px;
+    }
+
+    /* Mots qui bouclent : 3 mots + 1 slot vide (trou) => ZÉRO overlap */
+    .words{
+      height: 2.3em;
+      display:grid;
+      place-items:center;
+      font-weight: 1000;
+      font-size: var(--fs-2);
+      color: var(--blue);
+      margin-bottom: 8px;
+      position: relative;
+      overflow:hidden;
+    }
+
+    .word{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      opacity:0;
+      transform: translateY(10px);
+      animation: wordSlot calc(var(--word-step) * 4) ease-in-out infinite;
+      will-change: opacity, transform;
+    }
+
+    .word:nth-child(1){ animation-delay: calc(var(--word-step) * 0); }
+    .word:nth-child(2){ animation-delay: calc(var(--word-step) * 1); }
+    .word:nth-child(3){ animation-delay: calc(var(--word-step) * 2); }
+    .word:nth-child(4){ animation-delay: calc(var(--word-step) * 3); } /* trou */
+
+    @keyframes wordSlot{
+      0%   { opacity:0; transform: translateY(10px); }
+      5%   { opacity:1; transform: translateY(0); }
+      18%  { opacity:1; transform: translateY(0); }
+      23%  { opacity:0; transform: translateY(-10px); }
+      25%  { opacity:0; transform: translateY(-10px); }
+      100% { opacity:0; transform: translateY(-10px); }
+    }
+
+    .word.gap{ pointer-events:none; }
+
+    .splashHelp{
+      margin:0;
+      color: var(--muted);
+      font-size: var(--fs-4);
+    }
+
+    .splashControls{
+      margin-top: 12px;
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .srOnly{
+      position:absolute !important;
+      width:1px !important;
+      height:1px !important;
+      padding:0 !important;
+      margin:-1px !important;
+      overflow:hidden !important;
+      clip:rect(0,0,0,0) !important;
+      white-space:nowrap !important;
+      border:0 !important;
+    }
+
+    .app[aria-hidden="true"]{ display:none; }
+
+    /* Splash title + astérisque */
+    .asterisk{
+      font-size: .8em;
+      vertical-align: super;
+      margin-left: .08em;
+    }
+
+    /* Footer uniquement sur la splash (centré) */
+    .splashFooter{
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--stroke);
+      color: var(--muted);
+      font-size: var(--fs-4);
+      text-align: center;
+      display:block;
+    }
+
+    /* cache le footer de l'app (API/Auth) */
+    .page footer{
+      display:none;
+    }
   </style>
 </head>
 
 <body>
-<div class="app">
-<header>
-  <div class="logo">🧸</div>
-  <div>
-    <h1>Kinder Schaffa</h1>
-    <div style="color:#6b7280;font-size:14px">
-      Apprendre à vérifier les informations
-    </div>
-  </div>
-</header>
+  <a class="skip" href="#main">Aller au contenu</a>
 
-<main>
-  <label for="org">Nom de l’entreprise ou organisation</label>
-  <div class="row">
-    <input id="org" placeholder="Ex : Nike, LEGO, Nintendo…" />
-    <button id="btn">🔎 Chercher</button>
-  </div>
+  <div class="splash" id="splash" role="dialog" aria-modal="true" aria-labelledby="splashTitle" aria-describedby="splashDesc">
+    <div class="splashInner">
+      <div class="bigLogo" aria-hidden="true">🧸</div>
 
-  <div class="panel">
-    <div id="help">
-      <div class="badge">Informations</div>
-      <p class="text">
-        Saisis le nom d’une entreprise ou organisation, puis lance la recherche.
-        L’analyse porte uniquement sur la section <b>Controverse</b> de Wikipédia
-        et recherche les mots <b>travail</b> et <b>enfants</b>.
+      <h2 class="splashTitle" id="splashTitle">
+        Kinder Schaffa<span class="asterisk" aria-hidden="true">*</span>
+      </h2>
+
+      <div class="words" aria-hidden="true">
+        <div class="word">Je cherche…</div>
+        <div class="word">Je lis…</div>
+        <div class="word">Je vérifie…</div>
+        <div class="word gap" aria-hidden="true"></div><!-- slot vide = trou -->
+      </div>
+
+      <p class="splashHelp" id="splashDesc">
+        Cette application apprend aux enfants à <b>enquêter avec Wikipédia</b>.
+        <br/>
+        Les résultats doivent toujours être revus avec un adulte.
       </p>
+
+      <div class="splashControls">
+        <button id="startApp" type="button">
+          Commencer
+        </button>
+      </div>
+
+      <p class="srOnly" aria-live="polite" id="introLive">
+        Écran d’accueil. Appuyez sur Tab pour le bouton, ou sur Entrée pour commencer.
+      </p>
+
+      <footer class="splashFooter" aria-label="Définition">
+        <em>*Kinder Schaffa veut dire travail des enfants en alsacien.</em>
+      </footer>
     </div>
+  </div>
 
-    <div id="result" style="display:none">
-      <div class="badge" id="badge"></div>
-      <p class="text" id="msg"></p>
+  <div class="page">
+    <div class="app" id="appRoot" aria-hidden="true">
+      <div class="shell">
+        <header>
+          <div class="logo" aria-hidden="true">🧸</div>
+          <div>
+            <h1>Kinder Schaffa</h1>
+            <div class="subtitle">
+              Ici, on enquête sur les organisations qui enfreignent
+              <a href="https://www.ohchr.org/fr/instruments-mechanisms/instruments/convention-rights-child" target="_blank" rel="noopener noreferrer">
+              le droit international</a>.
+            </div>
+          </div>
+        </header>
 
-      <div class="card" id="choicesCard" style="display:none">
-        <div class="k">Sélection de page</div>
-        <div class="choiceWrap" id="choices"></div>
-      </div>
+        <main id="main" tabindex="-1">
+          <p class="sectionTitle"><label for="org">1) Écris le nom d'une entreprise ou d'une organisation</label></p>
+          <p class="hint">
+            Exemple : « Nike », « LEGO », « Decathlon ».
+          </p>
 
-      <div class="card">
-        <div class="k">Page Wikipédia</div>
-        <div class="v" id="title"></div>
-        <a class="btnLink" id="wikiLink" target="_blank" rel="noopener noreferrer">
-          Ouvrir la page
-        </a>
-      </div>
+          <form id="form" class="field" novalidate>
 
-      <div class="card">
-        <div class="k">Résumé</div>
-        <div class="v" id="summary"></div>
-      </div>
+            <div class="controlRow" role="group" aria-labelledby="org">
+              <input
+                id="org"
+                name="org"
+                inputmode="search"
+                autocomplete="off"
+                placeholder="Ex : Nike, LEGO, Decathlon…"
+                aria-describedby="orgHelp"
+              />
+              <button id="btn" type="submit">
+                🔎 Chercher sur Wikipédia
+              </button>
+            </div>
 
-      <div class="card">
-        <div class="k">Résultat</div>
-        <div class="v" id="resultText"></div>
+            <div id="orgHelp" class="hint">
+              2) Regarde la page Wikipédia. 3) Lis attentivement avec un adulte.
+            </div>
+          </form>
+
+          <div class="panel" aria-labelledby="panelTitle">
+            <div class="srOnly" id="panelTitle">Zone d’information et résultat</div>
+
+            <div id="help">
+              <div class="badge" role="note">📘 Mode apprentissage</div>
+              <p class="text">
+                Cette application <b>ne prouve rien</b>. Elle fait seulement une recherche de mots clés sur Wikipédia.
+                Ensuite, on <b>vérifie en lisant</b> la page avec un adulte.
+              </p>
+              <ol class="steps">
+                <li>On cherche une page Wikipédia.</li>
+                <li>On lit la partie «\u00A0Controverse\u00A0» (si elle existe).</li>
+                <li>On repère des mots liés au <b>travail</b> et aux <b>enfants</b>.</li>
+                <li>On discute : est-ce vrai ? est-ce expliqué ? quelle date ? quelles sources ?</li>
+              </ol>
+            </div>
+
+            <section id="result" style="display:none" aria-live="polite" aria-atomic="true">
+              <div class="badge load" id="badge" role="status">Recherche en cours</div>
+              <p class="text" id="msg">Analyse en cours…</p>
+
+              <div class="card" id="choicesCard" style="display:none">
+                <div class="k" id="choicesTitle">Choisis la bonne page (homonymie)</div>
+                <div class="choiceWrap" id="choices" role="list" aria-labelledby="choicesTitle"></div>
+              </div>
+
+              <div class="card">
+                <div class="k">Page Wikipédia</div>
+                <div class="v" id="title"></div>
+                <div class="actions">
+                  <a class="btnLink" id="wikiLink" target="_blank" rel="noopener noreferrer">
+                    Ouvrir la page Wikipédia
+                  </a>
+                  <button class="ghostBtn" id="copyLink" type="button">
+                    Copier le lien
+                  </button>
+                </div>
+                <p class="text" id="openHint">
+                  Ouvre la page et vérifie avec un adulte. Vérifie en particulier la date et les sources. 
+                  <br/>
+                  Pour aller beaucoup plus loin, recherche la page en anglais.
+                </p>
+              </div>
+
+              <div class="card">
+                <div class="k">Résumé (Wikipédia)</div>
+                <blockquote class="v wikiQuote" id="summary"></blockquote>
+              </div>
+
+              <div class="card">
+                <div class="k">Ce que l’application a vu</div>
+                <div class="v" id="resultText"></div>
+                <br/>
+                <p class="text" id="signalNote" style="display:none"></p>
+              </div>
+
+              <div class="card">
+                <div class="k">Mini-checklist (avec un adulte)</div>
+                <ul class="steps">
+                  <li>Est-ce que la page parle bien de la même organisation ?</li>
+                  <li>Quel passage exact parle du sujet ?</li>
+                  <li>Y a-t-il des sources ?</li>
+                  <li>De quand date l’information ?</li>
+                </ul>
+              </div>
+            </section>
+          </div>
+        </main>
+
+        <!-- footer app masqué via CSS -->
+        <footer>
+          <span>Kinder Schaffa</span>
+          <span id="api">API :</span>
+          <span id="auth">Auth :</span>
+        </footer>
       </div>
     </div>
   </div>
-</main>
-
-<footer>
-  <span>Kinder Schaffa</span>
-  <span id="api">API :</span>
-  <span id="auth">Auth :</span>
-</footer>
-</div>
 
 <script>
-function _cs(a){ return String.fromCharCode(...a); }
+  function _cs(a){ return String.fromCharCode(...a); }
 
-function buildApiBase(){
-  const proto = _cs([104,116,116,112,115,58,47,47]);
-  const uuid = _cs([
-    98,99,54,99,97,55,102,53,45,57,99,51,48,45,52,57,
-    102,54,45,97,56,101,56,45,48,49,99,50,54,97,49,101,
-    56,57,97,100
-  ]);
-  const suffix = _cs([46,102,114,101,101,100,100,110,115,46,111,114,103]);
-  return proto + uuid + suffix;
-}
+  function buildApiBase(){
+    const proto = _cs([104,116,116,112,115,58,47,47]);
+    const uuid = _cs([
+      98,99,54,99,97,55,102,53,45,57,99,51,48,45,52,57,
+      102,54,45,97,56,101,56,45,48,49,99,50,54,97,49,101,
+      56,57,97,100
+    ]);
+    const suffix = _cs([46,102,114,101,101,100,100,110,115,46,111,114,103]);
+    return proto + uuid + suffix;
+  }
 
-function buildApiToken(){
-  const TOKEN_CHARCODES = [
-    50, 54, 56, 50, 53, 57, 101, 50, 102, 97, 52, 101, 48, 55, 99, 50, 97, 56, 48, 
-    57, 48, 102, 98, 51, 56, 57, 57, 54, 49, 100, 97, 55, 101, 57, 100, 99, 101, 51, 
-    102, 51, 101, 49, 50, 57, 101, 99, 100, 49, 52, 55, 53, 56, 48, 51, 49, 98, 51, 
-    53, 57, 51, 101, 48, 50, 101
-  ];
-  return _cs(TOKEN_CHARCODES);
-}
+  function buildApiToken(){
+    const TOKEN_CHARCODES = [
+      50, 54, 56, 50, 53, 57, 101, 50, 102, 97, 52, 101, 48, 55, 99, 50, 97, 56, 48,
+      57, 48, 102, 98, 51, 56, 57, 57, 54, 49, 100, 97, 55, 101, 57, 100, 99, 101, 51,
+      102, 51, 101, 49, 50, 57, 101, 99, 100, 49, 52, 55, 53, 56, 48, 51, 49, 98, 51,
+      53, 57, 51, 101, 48, 50, 101
+    ];
+    return _cs(TOKEN_CHARCODES);
+  }
 
-const API_BASE = buildApiBase();
-const API_TOKEN = buildApiToken();
+  const API_BASE = buildApiBase();
+  const API_TOKEN = buildApiToken();
 
-document.getElementById("api").textContent = "API : " + API_BASE + "/check";
-document.getElementById("auth").textContent = "Auth : Bearer";
+  document.getElementById("api").textContent = "API : " + API_BASE + "/check";
+  document.getElementById("auth").textContent = "Auth : Bearer";
 
-const btn = document.getElementById("btn");
-const input = document.getElementById("org");
+  const form = document.getElementById("form");
+  const btn = document.getElementById("btn");
+  const input = document.getElementById("org");
 
-const help = document.getElementById("help");
-const result = document.getElementById("result");
+  const help = document.getElementById("help");
+  const result = document.getElementById("result");
 
-const badge = document.getElementById("badge");
-const msg = document.getElementById("msg");
-const title = document.getElementById("title");
-const wikiLink = document.getElementById("wikiLink");
-const summary = document.getElementById("summary");
-const resultText = document.getElementById("resultText");
+  const badge = document.getElementById("badge");
+  const msg = document.getElementById("msg");
+  const title = document.getElementById("title");
+  const wikiLink = document.getElementById("wikiLink");
+  const summary = document.getElementById("summary");
+  const resultText = document.getElementById("resultText");
+  const signalNote = document.getElementById("signalNote");
 
-const choicesCard = document.getElementById("choicesCard");
-const choices = document.getElementById("choices");
+  const choicesCard = document.getElementById("choicesCard");
+  const choices = document.getElementById("choices");
 
-function wikiSearch(org){
-  return "https://fr.wikipedia.org/wiki/Special:Search?search=" +
-    encodeURIComponent(org);
-}
+  const copyLinkBtn = document.getElementById("copyLink");
 
-function buildCheckUrl(org, pick){
-  const qs = pick
-    ? `org=${encodeURIComponent(org)}&pick=${encodeURIComponent(pick)}`
-    : `org=${encodeURIComponent(org)}`;
-  return `${API_BASE}/check?${qs}`;
-}
+  function wikiSearch(org){
+    return "https://fr.wikipedia.org/wiki/Special:Search?search=" + encodeURIComponent(org);
+  }
 
-function resetUI(){
-  badge.className = "badge load";
-  badge.textContent = "Recherche en cours";
-  msg.textContent = "Analyse de la section Controverse";
-  summary.textContent = "";
-  resultText.textContent = "";
-  choicesCard.style.display = "none";
-  choices.innerHTML = "";
-}
+  function buildCheckUrl(org, pick){
+    const qs = pick
+      ? `org=${encodeURIComponent(org)}&pick=${encodeURIComponent(pick)}`
+      : `org=${encodeURIComponent(org)}`;
+    return `${API_BASE}/check?${qs}`;
+  }
 
-function showChoices(org, list){
-  choicesCard.style.display = "block";
-  list.forEach(c => {
-    const b = document.createElement("button");
-    b.className = "choiceBtn";
-    b.textContent = c;
-    b.onclick = async () => {
-      resetUI();
-      const data = await callApi(org, c);
-      render(data, org);
-    };
-    choices.appendChild(b);
-  });
-}
+  function setBusy(isBusy){
+    btn.disabled = isBusy;
+    input.disabled = isBusy;
+    if(isBusy){
+      btn.setAttribute("aria-busy","true");
+      badge.setAttribute("aria-busy","true");
+    }else{
+      btn.removeAttribute("aria-busy");
+      badge.removeAttribute("aria-busy");
+    }
+  }
 
-async function callApi(org, pick){
-  let res;
-  try{
-    res = await fetch(buildCheckUrl(org, pick), {
-      method:"GET",
-      headers:{ Authorization:"Bearer " + API_TOKEN },
-      cache:"no-store"
+  function resetUI(){
+    badge.className = "badge load";
+    badge.textContent = "Recherche en cours";
+    msg.textContent = "Je regarde la page Wikipédia…";
+    summary.textContent = "";
+    resultText.textContent = "";
+    choicesCard.style.display = "none";
+    choices.innerHTML = "";
+    title.textContent = "";
+    signalNote.style.display = "none";
+    signalNote.textContent = "";
+    wikiLink.removeAttribute("href");
+  }
+
+  function showChoices(org, list){
+    choicesCard.style.display = "block";
+    choices.innerHTML = "";
+
+    list.forEach((c, idx) => {
+      const b = document.createElement("button");
+      b.className = "choiceBtn";
+      b.type = "button";
+      b.textContent = c;
+      b.setAttribute("role","listitem");
+      b.setAttribute("aria-label", "Choisir la page : " + c);
+      b.onclick = async () => {
+        resetUI();
+        setBusy(true);
+        const data = await callApi(org, c);
+        setBusy(false);
+        render(data, org);
+      };
+      choices.appendChild(b);
+      if(idx === 0) setTimeout(()=> b.focus(), 0);
     });
-  }catch(e){
-    return { ok:false, message:"Erreur réseau ou CORS" };
   }
 
-  let data = null;
-  try{ data = await res.json(); }catch(e){}
+  async function callApi(org, pick){
+    let res;
+    try{
+      res = await fetch(buildCheckUrl(org, pick), {
+        method:"GET",
+        headers:{ Authorization:"Bearer " + API_TOKEN },
+        cache:"no-store"
+      });
+    }catch(e){
+      return { ok:false, message:"Erreur du réseau (connexion)." };
+    }
 
-  if (!res.ok){
-    return data || { ok:false, message:"Erreur API (" + res.status + ")" };
+    let data = null;
+    try{ data = await res.json(); }catch(e){}
+
+    if (!res.ok){
+      return data || { ok:false, message:"Erreur du serveur (" + res.status + ")" };
+    }
+    return data;
   }
-  return data;
-}
-
-function render(data, org){
-  if (!data || data.ok === false){
-    badge.className = "badge err";
-    badge.textContent = "Erreur";
-    msg.textContent = data?.message || "Erreur";
-    title.textContent = org;
-    wikiLink.href = wikiSearch(org);
-    return;
+ 
+  function decodeEntities(s){
+    const t = document.createElement("textarea");
+    t.innerHTML = s;
+    return t.value;
   }
-
-  title.textContent = data.title || org;
-  wikiLink.href = data.wikipedia || wikiSearch(org);
-  summary.textContent = data.summary || "";
-  msg.textContent = data.message || "";
-
-  if (data.homonymyDetected && data.needChoice){
-    badge.className = "badge err";
-    badge.textContent = "Homonymie";
-    resultText.textContent = "Sélection requise";
-    showChoices(org, data.homonymyCandidates || []);
-    return;
-  }
-
-  if (data.childLabor === true){
-    badge.className = "badge ko";
-    badge.textContent = "Signal détecté";
-    resultText.textContent = "Mots clés détectés dans la section Controverse.";
-  }else if (data.childLabor === false){
-    badge.className = "badge ok";
-    badge.textContent = "Aucun signal détecté";
-    resultText.textContent = "Aucun indicateur trouvé dans la section Controverse.";
-  }else{
-    badge.className = "badge err";
-    badge.textContent = "Indéterminé";
-    resultText.textContent = data.message || "";
-  }
-}
-
-btn.onclick = async () => {
-  const org = input.value.trim();
-  if (!org){
-    help.style.display = "block";
-    result.style.display = "none";
-    return;
+  
+  function escapeHtml(s){
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
-  help.style.display = "none";
-  result.style.display = "block";
-  resetUI();
+  function highlightKeywordsInText(rawText, keywords){
+    const safeText = escapeHtml(rawText);
+  
+    if (!Array.isArray(keywords) || keywords.length === 0) return safeText;
+  
+    // Trier du plus long au plus court pour éviter que "travail" gêne "travail forcé"
+    const sorted = [...new Set(keywords)]
+      .filter(Boolean)
+      .sort((a,b) => b.length - a.length);
+  
+    // Échapper pour regex
+    const escaped = sorted.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  
+    // Remplacement insensible à la casse (pas de \b pour gérer accents/apostrophes)
+    const re = new RegExp(`(${escaped.join("|")})`, "gi");
+  
+    return safeText.replace(re, "<strong>$1</strong>");
+  }
 
-  const data = await callApi(org);
-  render(data, org);
-};
+  function render(data, org){
+    if (!data || data.ok === false){
+      badge.className = "badge err";
+      badge.textContent = "Indéterminé";
+      msg.textContent = data?.message || "Erreur : cette organisation existe-t-elle? ";
+      title.textContent = org;
+      wikiLink.href = wikiSearch(org);
+      resultText.textContent = "Je n’ai pas pu analyser la page de cette organisation. Ouvre Wikipédia et cherche manuellement.";
+      return;
+    }
 
-input.addEventListener("keydown", e => {
-  if (e.key === "Enter") btn.click();
-});
+    title.textContent = data.title || org;
+    wikiLink.href = data.wikipedia || wikiSearch(org);
+
+    const decodedSummary = decodeEntities(data.summary || "");
+    const decodedExcerpt = decodeEntities(data.excerptAroundMatch || "");
+    const textToShow = decodedExcerpt || decodedSummary;
+
+    summary.innerHTML = highlightKeywordsInText(textToShow, data.matchedKeywords);
+    msg.textContent = data.message || "";
+
+    if (data.homonymyDetected && data.needChoice){
+      badge.className = "badge err";
+      badge.textContent = "Plusieurs pages";
+      resultText.textContent = "Choisis la bonne page (avec un adulte).";
+      showChoices(org, data.homonymyCandidates || []);
+      return;
+    }
+
+    if (data.childLabor === true){
+      badge.className = "badge ko";
+      badge.textContent = "Signal détecté";
+      resultText.innerHTML =
+        "Des mots liés au travail et aux enfants ont été trouvés dans la section «\u00A0Controverse\u00A0».\n" +
+        "<br/><span class='calloutArrow'>Lis le passage exact avec un adulte pour comprendre (date, contexte, sources).</span>";
+      signalNote.style.display = "block";
+      signalNote.textContent = 'Rappel : un “signal” veut dire que “des mots ont été trouvés”, et non pas “c’est prouvé”.';
+    }else if (data.childLabor === false){
+      badge.className = "badge ok";
+      badge.textContent = "Pas de signal";
+      resultText.innerHTML =
+        "Aucun mot clé n’a été trouvé dans la section «\u00A0Controverse\u00A0».\n" +
+        "<br/><span class='calloutArrow'>Ça ne prouve pas l’absence de travail des enfants : ouvre la page et vérifie avec un adulte.</span>";
+      signalNote.style.display = "block";
+      signalNote.textContent = "Rappel : “pas de signal” ne veut pas dire “rien”. Il faut quand même ouvrir la page et vérifier avec un adulte (date, contexte, sources).";
+    }else{
+      badge.className = "badge err";
+      badge.textContent = "Indéterminé";
+      resultText.textContent = data.message || "Je ne sais pas conclure. Ouvre la page et vérifie avec un adulte.";
+      signalNote.style.display = "none";
+      signalNote.textContent = "";
+    }
+  }
+
+  async function runSearch(){
+    const org = input.value.trim();
+
+    if (!org){
+      help.style.display = "block";
+      result.style.display = "none";
+      input.focus();
+      return;
+    }
+
+    help.style.display = "none";
+    result.style.display = "block";
+    resetUI();
+    setBusy(true);
+
+    const data = await callApi(org);
+    setBusy(false);
+    render(data, org);
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    runSearch();
+  });
+
+  copyLinkBtn.addEventListener("click", async () => {
+    const href = wikiLink.getAttribute("href");
+    if(!href){
+      alert("Pas de lien à copier pour l’instant.");
+      return;
+    }
+    try{
+      await navigator.clipboard.writeText(href);
+      copyLinkBtn.textContent = "Lien copié ✅";
+      setTimeout(()=> copyLinkBtn.textContent = "Copier le lien", 1200);
+    }catch(e){
+      prompt("Copie ce lien :", href);
+    }
+  });
+
+  /* --- Splash logic ---
+     - pas de timer : on reste sur la splash tant qu'on ne clique pas
+     - fermeture uniquement via bouton "Commencer"
+  */
+  const splash = document.getElementById("splash");
+  const appRoot = document.getElementById("appRoot");
+  const startBtn = document.getElementById("startApp");
+
+  let splashClosed = false;
+
+  function parseMs(v){
+    const s = String(v).trim();
+    if(s.endsWith("ms")) return parseFloat(s);
+    if(s.endsWith("s")) return parseFloat(s) * 1000;
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function closeSplashSoft(){
+    if(splashClosed) return;
+    splashClosed = true;
+
+    splash.classList.add("isFading");
+
+    const cs = getComputedStyle(document.documentElement);
+    const fadeOutMs = parseMs(cs.getPropertyValue("--splash-fade-out")) || 1100;
+
+    setTimeout(() => {
+      splash.style.display = "none";
+      appRoot.setAttribute("aria-hidden","false");
+      const main = document.getElementById("main");
+      main.focus();
+      setTimeout(()=> input.focus(), 0);
+    }, fadeOutMs);
+  }
+
+  startBtn.addEventListener("click", closeSplashSoft);
 </script>
 </body>
 </html>
