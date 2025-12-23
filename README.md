@@ -34,7 +34,7 @@ L'application est disponible ici : https://guillaumefe.github.io/kinder-schaffa
 4. Ouverture de la page Wikipédia et lecture guidée (contexte, date, sources).
 
 > Remarque : la version anglaise de Wikipédia est souvent plus complète et détaillée. Une recherche complémentaire en anglais peut donc être utile.
-
+> TIPS : pour Nestlé cherchez et vous trouverez.
 ---
 
 ## Interprétation des badges
