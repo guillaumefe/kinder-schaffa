@@ -4,6 +4,8 @@ Kinder Schaffa est une interface pédagogique pour **apprendre à enquêter à p
 
 L’objectif n’est pas de “trancher” en quelques secondes : l’outil sert à **repérer des passages**, puis à **lire, contextualiser et vérifier**.
 
+L'application est disponible ici : http://guillaumefe.github.io/kinder-schaffa
+
 ---
 
 ## Fonctionnement et limites
