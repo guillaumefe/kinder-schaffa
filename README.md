@@ -1,6 +1,6 @@
 # Kinder Schaffa 🧸 — Guide d’utilisation
 
-Kinder Schaffa est une interface pédagogique pour **apprendre à enquêter à partir de Wikipédia** lorsqu’une certaine question se pose au sujet d’une entreprise ou d’une organisation.
+Kinder Schaffa est une interface pédagogique pour **apprendre à enquêter à partir de Wikipédia** lorsqu’une _certaine_ question se pose au sujet d’une entreprise ou d’une organisation.
 
 L’objectif n’est pas de “trancher” en quelques secondes : l’outil sert à **repérer des passages**, puis à **lire, contextualiser et vérifier**.
 
@@ -95,7 +95,7 @@ Ce choix vise à :
 
 En effet, la page web contient un secret : elle embarque un **token d’accès statique** visant à réduire les abus automatisés (robots, scans massifs).  
 Il s’agit d’une **protection légère et transitoire**, assumée comme telle, préférée à la mise en place plus longue ou plus couteuse d'un service tiers et/ou reverse-proxy.
-Avec le token vous pouvez requêter assez librement le proxy qui interroge wikipedia dans vos propres applications mais **merci de ne pas en abuser : hébergez votre instance!**
+Avec le token vous pouvez requêter assez librement le proxy qui interroge wikipedia depuis vos propres applications mais **merci de ne pas en abuser : hébergez votre instance!**
 
 ## Licence
 
